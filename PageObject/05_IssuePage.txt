@@ -1,0 +1,75 @@
+#******************** Settings ************************
+
+*** Settings ***
+
+Documentation: This test suite assesses the issue management functionality within GitLab projects, specifically focusing on creating, reading, updating, and deleting issues to ensure effective tracking and management. Includes handling of both valid and invalid operations.
+
+Pre Condition: User must be logged in and a project must be pre-created and selected for testing.
+Post Condition: Any test issues created should be cleaned up to restore the project's initial state.
+Tags: IssueManagement, CRUD, PositiveTests, NegativeTests
+
+#******************* Common Variables ********************
+
+*** Variables ***
+
+IssuePageUrl = https://gitlab.com/<group-slug>/<project-slug>/-/issues
+IssueName = "Initial Test Issue"
+UpdatedIssueName = "Updated Test Issue"
+DuplicateIssueName = "Updated Test Issue"
+InvalidIssueName = ""  # Empty title for testing invalid input
+
+#******************** Test Cases *************************
+
+*** Test Cases ***
+
+# Positive Tests
+
+Create issue
+    Navigate to IssuePageUrl
+    Click on "New Issue"
+    Input Title: ${IssueName}
+    Submit Form
+    Verify: Page Should Contain "Issue '${IssueName}' was successfully created."
+
+Update name of issue
+    Navigate to the issue page for "${IssueName}"
+    Click on "Edit"
+    Change Title to ${UpdatedIssueName}
+    Submit Form
+    Verify: Page Should Contain "Issue '${UpdatedIssueName}' has been updated."
+
+Create second issue with previous updated name
+    Navigate to IssuePageUrl
+    Click on "New Issue"
+    Input Title: ${DuplicateIssueName}
+    Submit Form
+    Verify: Page Should Contain "Issue '${DuplicateIssueName}' was successfully created."
+
+Delete first issue
+    Navigate to the issue page for "${UpdatedIssueName}"
+    Click on "Delete"
+    Confirm Deletion
+    Verify: Page Should Contain "Issue was successfully deleted."
+
+# Negative Tests
+
+Attempt to create issue with empty title
+    Navigate to IssuePageUrl
+    Click on "New Issue"
+    Input Title: ${InvalidIssueName}
+    Submit Form
+    Verify: Page Should Contain "Title can't be blank."
+
+Create issue with duplicate name
+    Navigate to IssuePageUrl
+    Click on "New Issue"
+    Input Title: ${IssueName}
+    Submit Form
+    Verify: Page Should Contain "Issue with this title already exists."
+
+Attempt to update issue with empty title
+    Navigate to the issue page for "${UpdatedIssueName}"
+    Click on "Edit"
+    Change Title to ${InvalidIssueName}
+    Submit Form
+    Verify: Page Should Contain "Title can't be blank."

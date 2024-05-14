@@ -1,0 +1,72 @@
+#******************** Settings ************************
+
+*** Settings ***
+
+Documentation: This test suite evaluates the user registration functionality of GitLab. It assesses the process for registering with both valid and invalid credentials to ensure the application handles user inputs correctly and provides appropriate feedback.
+
+Pre Condition: User is not logged in and is directed to the registration page.
+Post Condition: Browser session is reset; user is logged out if registration succeeds.
+Tags: Registration, ValidInput, InvalidInput
+
+#******************* Common Variables ********************
+
+*** Variables ***
+
+LoginUrl = https://gitlab.com/users/sign_up
+Valid_Username = "validUser"
+Valid_Password = "ValidPassword123!"
+Invalid_Email = "invalidemail@"
+Empty_Password = ""
+Duplicate_Username = "validUser"
+Invalid_Password = "123"  # Too short to meet password requirements.
+
+#******************** Test Cases *************************
+
+*** Test Cases ***
+
+# Positive Tests
+
+Register user with valid username and password
+    Navigate to LoginUrl
+    Input Username: ${Valid_Username}
+    Input Password: ${Valid_Password}
+    Submit Registration Form
+    Verify: Page Should Contain "Welcome page" or "Verification email sent" message
+
+# Negative Tests
+
+Register user with same username
+    Navigate to LoginUrl
+    Input Username: ${Duplicate_Username}
+    Input Password: ${Valid_Password}
+    Submit Registration Form
+    Verify: Page Should Contain "Username already exists."
+
+Register user with empty password
+    Navigate to LoginUrl
+    Input Username: ${Valid_Username}
+    Input Password: ${Empty_Password}
+    Submit Registration Form
+    Verify: Page Should Contain "Password is required."
+
+Register user with invalid email
+    Navigate to LoginUrl
+    Input Username: ${Valid_Username}
+    Input Password: ${Valid_Password}
+    Input Email: ${Invalid_Email}
+    Submit Registration Form
+    Verify: Page Should Contain "Invalid email format."
+
+Register user without completing reCAPTCHA
+    Navigate to LoginUrl
+    Input Username: ${Valid_Username}
+    Input Password: ${Valid_Password}
+    Submit Registration Form without completing reCAPTCHA
+    Verify: Page Should Contain "Please complete reCAPTCHA."
+
+Register user with invalid password
+    Navigate to LoginUrl
+    Input Username: ${Valid_Username}
+    Input Password: ${Invalid_Password}
+    Submit Registration Form
+    Verify: Page Should Contain "Password does not meet complexity requirements."

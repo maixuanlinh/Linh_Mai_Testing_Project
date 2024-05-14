@@ -1,0 +1,67 @@
+#******************** Settings ************************
+
+*** Settings ***
+
+Documentation: This test suite covers the CRUD (Create, Read, Update, Delete) operations for projects on GitLab. It tests the functionality of project creation, viewing (read), updating project details, and deleting projects to ensure robust project management capabilities.
+
+Pre Condition: User must be logged in with sufficient permissions to create, update, and delete projects.
+Post Condition: Clean up any test data created during testing to maintain a clean state.
+Tags: CRUD, ProjectManagement, Positive, Negative
+
+#******************* Common Variables ********************
+
+*** Variables ***
+
+ProjectPageUrl = https://gitlab.com/projects/new
+TemplateName = "Sample Template Project"
+ProjectName = "Test Project"
+UpdatedProjectName = "Test Project Updated"
+DuplicateProjectName = "Test Project"
+
+#******************** Test Cases *************************
+
+*** Test Cases ***
+
+# Positive Tests
+
+Create blank project
+    Navigate to ProjectPageUrl
+    Click on "Create blank project"
+    Input ProjectName: ${ProjectName}
+    Submit Form
+    Verify: Page Should Contain "Project '${ProjectName}' was successfully created."
+
+Create template project
+    Navigate to ProjectPageUrl
+    Select "Create from template"
+    Choose Template: ${TemplateName}
+    Input ProjectName: ${ProjectName} " Template"
+    Submit Form
+    Verify: Page Should Contain "Project '${ProjectName} Template' was successfully created."
+
+Update name of template project
+    Navigate to the project settings of "${ProjectName} Template"
+    Click on "Edit Project"
+    Change ProjectName to ${UpdatedProjectName}
+    Submit Form
+    Verify: Page Should Contain "Project details are updated."
+
+Delete template project
+    Navigate to the project settings of ${UpdatedProjectName}
+    Select "Advanced Settings"
+    Click on "Delete Project"
+    Confirm Deletion
+    Verify: Page Should Contain "Project was successfully deleted."
+
+Validate that message is showing Project was successfully created
+    Navigate to the project page
+    Verify: Page Should Contain "Project was successfully created."
+
+# Negative Tests
+
+Create a blank project with the same name
+    Navigate to ProjectPageUrl
+    Click on "Create blank project"
+    Input ProjectName: ${DuplicateProjectName}
+    Submit Form
+    Verify: Page Should Contain "Project with this name already exists."
